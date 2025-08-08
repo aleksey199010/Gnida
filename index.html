@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мини-приложение Telegram</title>
+    <!-- Подключаем Tailwind CSS для красивого оформления -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Подключаем Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        /* Устанавливаем шрифт Inter для всего документа */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Простая анимация появления сообщения */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-50 flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl max-w-lg w-full text-center">
+
+        <!-- Начальный экран с одной кнопкой, изначально видимый -->
+        <div id="initialScreen">
+            <h1 class="text-2xl font-bold mb-6">Готовы?</h1>
+            <button id="showGnidBtn" 
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition duration-200 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
+                Увидеть гниду
+            </button>
+        </div>
+
+        <!-- Экран с опросом, изначально скрытый -->
+        <div id="surveyScreen" class="hidden">
+            <!-- Заголовок опроса -->
+            <h1 id="mainTitle" class="text-2xl font-bold mb-6">Как вы считаете?</h1>
+
+            <!-- Контейнер для изображения -->
+            <div id="imageContainer" class="mt-4">
+                <img src="https://i.postimg.cc/fLF39Vpw/photo-2025-08-08-12-34-15.jpg" 
+                     alt="Картинка" 
+                     class="rounded-xl shadow-xl w-full h-auto object-cover">
+            </div>
+            
+            <!-- Контейнер для кнопок опроса -->
+            <div id="surveyButtons" class="flex justify-between mt-8 space-x-4">
+                <button id="yesBtn" 
+                        class="w-1/2 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-2 rounded-lg shadow-lg transform transition duration-200 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300">
+                    Да, это гнида
+                </button>
+                <button id="noBtn" 
+                        class="w-1/2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-2 rounded-lg shadow-lg transform transition duration-200 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-red-300">
+                    Это не так
+                </button>
+            </div>
+        </div>
+
+        <!-- Контейнер для сообщения, изначально скрытый -->
+        <div id="messageBox" class="mt-6 hidden p-4 rounded-lg text-lg font-semibold fade-in">
+            <!-- Текст сообщения будет здесь -->
+        </div>
+
+        <!-- Кнопка "Вернуться", изначально скрыта -->
+        <div id="returnButtonContainer" class="mt-8 hidden">
+            <button id="returnBtn" 
+                    class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transform transition duration-200 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-gray-300">
+                Вернуться
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Инициализируем Telegram Web App, как только скрипт загружен
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+        }
+
+        // Получаем ссылки на элементы DOM
+        const initialScreen = document.getElementById('initialScreen');
+        const showGnidBtn = document.getElementById('showGnidBtn');
+        const surveyScreen = document.getElementById('surveyScreen');
+        const messageBox = document.getElementById('messageBox');
+        const returnBtnContainer = document.getElementById('returnButtonContainer');
+        const returnBtn = document.getElementById('returnBtn');
+
+        // Обработчик для кнопки "Увидеть гниду"
+        showGnidBtn.addEventListener('click', () => {
+            initialScreen.classList.add('hidden');
+            surveyScreen.classList.remove('hidden');
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.ready();
+            }
+        });
+
+        // Обработчик для обеих кнопок опроса
+        const handleSurveyClick = () => {
+            surveyScreen.classList.add('hidden');
+            
+            // Показываем контейнер с сообщением и делаем его "огромным"
+            messageBox.classList.remove('hidden');
+            messageBox.classList.add('text-4xl', 'font-extrabold', 'text-red-600', 'dark:text-red-400');
+            
+            // Устанавливаем текст сообщения и историю
+            messageBox.innerHTML = `
+                <div class="flex flex-col items-center">
+                    <p>Мы засчитали ответ, что это гнида.</p>
+                    <p class="mt-4 text-2xl mb-4">и теперь Вы знаете что это Гнида</p>
+                    <div class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-4 rounded-lg text-left text-base font-normal">
+                        <h3 class="text-lg font-bold mb-2">История про Гниду</h3>
+                        <p>Ещё с малых лет Гниду любили только родители. Они были его единственным убежищем и отдали все сбережения, чтобы он смог уехать в другую страну. Но, устроившись за границей, Гнида забыл о них и звонил только за деньгами.</p>
+                        <p class="mt-2">Он стал настоящим подкаблучником, стыдился родителей перед своей женой и тёщей. Когда родители приехали сами, чтобы увидеть внучку, Гнида их не встретил, потому что было поздно и он спал. Он показал ребёнка один раз, быстро сделал одну фотографию и сказал, что внучке нужно в детский сад. </p>
+                    </div>
+                </div>
+            `;
+            
+            // Показываем кнопку "Вернуться"
+            returnBtnContainer.classList.remove('hidden');
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.ready();
+            }
+        };
+
+        // Добавляем обработчики событий для кнопок опроса и возврата
+        document.getElementById('yesBtn').addEventListener('click', handleSurveyClick);
+        document.getElementById('noBtn').addEventListener('click', handleSurveyClick);
+        
+        const handleReturn = () => {
+            messageBox.classList.add('hidden');
+            returnBtnContainer.classList.add('hidden');
+            initialScreen.classList.remove('hidden');
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.ready();
+            }
+        };
+        
+        returnBtn.addEventListener('click', handleReturn);
+
+    </script>
+
+</body>
+</html>
